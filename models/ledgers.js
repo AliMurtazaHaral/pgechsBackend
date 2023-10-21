@@ -36,6 +36,10 @@ const ledger = new Schema({
         type:Number,
         require:true
     },
+    extraCharges:{
+        type:String,
+        require:false
+    },
     LedgerStatus:{
         type:Boolean,
         default:true

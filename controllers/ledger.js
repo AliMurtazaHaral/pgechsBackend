@@ -12,13 +12,14 @@ const ledger = {
             debit: Joi.number().required(),
             credit: Joi.number().required(),
             balance: Joi.number().required(),
+            extraCharges: Joi.string(),
             date:Joi.date().required()
         });
         const { error } = ledgerSchema.validate(req.body);
         if (error) {
             return next(error);
         }
-        const { particulars, chequeOrDraft, Slip, debit, credit, balance,date } = req.body;
+        const { particulars, chequeOrDraft, Slip, debit, credit, balance, extraCharges,date } = req.body;
         const {id} = req.params
         let ledger;
         try {
@@ -30,6 +31,7 @@ const ledger = {
                 debit: debit,
                 credit: credit,
                 balance: balance,
+                extraCharges: extraCharges,
                 date: date,
             });
             ledger = await ledgerToAdd.save();
