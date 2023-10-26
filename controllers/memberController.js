@@ -17,8 +17,8 @@ const transporter = nodemailer.createTransport({
     port: 465, // or 587 for TLS
     secure: true, // true for SSL, false for TLS
     auth: {
-        user: 'fivacraza@gmail.com',
-        pass: 'hpkp aoai kuwk bmrg',
+        user: 'pgechs.com.pk@gmail.com',
+        pass: 'owyf vzwy gsog wnpt',
     },
 });
 
@@ -27,7 +27,7 @@ async function sendEmail(recipientEmail, subject, message) {
     try {
         // Send mail with defined transport object
         const info = await transporter.sendMail({
-            from: 'faizanpk33@gmail.com',
+            from: 'pgechs.com.pk@gmail.com',
             to: recipientEmail,
             subject: subject,
             text: message,
