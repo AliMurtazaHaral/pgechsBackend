@@ -34,7 +34,7 @@ const ledger = new Schema({
     },
     balance:{
         type:Number,
-        require:true
+        require:false
     },
     extraCharges:{
         type:String,

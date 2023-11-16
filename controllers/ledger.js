@@ -7,11 +7,10 @@ const ledger = {
     async add(req, res, next) {
         const ledgerSchema = Joi.object({
             particulars: Joi.string().required(),
-            chequeOrDraft: Joi.string().required(),
+            chequeORdraft: Joi.string().required(),
             Slip: Joi.string().required(),
             debit: Joi.number().required(),
             credit: Joi.number().required(),
-            balance: Joi.number().required(),
             extraCharges: Joi.string(),
             date:Joi.date().required()
         });
@@ -19,18 +18,17 @@ const ledger = {
         if (error) {
             return next(error);
         }
-        const { particulars, chequeOrDraft, Slip, debit, credit, balance, extraCharges,date } = req.body;
+        const { particulars, chequeORdraft, Slip, debit, credit, extraCharges,date } = req.body;
         const {id} = req.params
         let ledger;
         try {
             const ledgerToAdd = new LedgerModel({
                 MemberID: id,
                 particulars: particulars,
-                chequeORdraft: chequeOrDraft,
+                chequeORdraft: chequeORdraft,
                 Slip: Slip,
                 debit: debit,
                 credit: credit,
-                balance: balance,
                 extraCharges: extraCharges,
                 date: date,
             });
@@ -92,13 +90,13 @@ const ledger = {
     async update(req, res, next) {
         const { id } = req.params;
         const {
-            particulars, chequeOrDraft, Slip, debit, credit, balance,date
+            particulars, chequeORdraft, Slip, debit, credit, extraCharges,date
         } = req.body;
     
         try {
             // Create an object with the fields you want to update
             const updates = {
-                particulars, chequeOrDraft, Slip, debit, credit, balance,date
+                particulars, chequeORdraft, Slip, debit, credit, extraCharges,date
             };
     
             // Find the document by ID and update it with the provided updates

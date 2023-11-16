@@ -404,57 +404,38 @@ const memberController = {
 
 
     async update(req, res, next) {
-        const updatedSchema = Joi.object({
-            name: Joi.string(),
-            address: Joi.string(),
-            phoneNumber: Joi.string(),
-            cnic: Joi.string(),
-        });
-        const { error } = updatedSchema.validate(req.body);
-        if (error) {
-            return next(error);
-        }
-        const { name, address, phoneNumber, cnic } = req.body;
-
         const { id } = req.params;
-        let getData;
+        const {
+            name,
+            address,
+            phoneNumber,
+            cnic
+        } = req.body;
+    
         try {
-            const userId = await memberReg.findOne({ _id: id });
-            getData = await memberModel.findOne({ member_id: userId._id });
-        } catch (error) {
-            return next(error);
-        }
-        const alreadyInsertedData = {
-            name: getData.name,
-            address: getData.address,
-            phoneNumber: getData.phoneNumber,
-            cnic: getData.cnic,
-        };
-        if (name == '') {
-            name = alreadyInsertedData.name;
-        }
-        if (address == '') {
-            address = alreadyInsertedData.address
-        }
-        if (phoneNumber == '') {
-            address = alreadyInsertedData.phoneNumber
-        }
-        if (cnic == '') {
-            address = alreadyInsertedData.cnic;
-        }
-        let updatedData;
-        try {
-            updatedData = await getData.updateOne({
-                name: name,
-                address: address,
-                phoneNumber: phoneNumber,
-                cnic: cnic
+            // Create an object with the fields you want to update
+            const updates = {
+                name,
+                address,
+                phoneNumber,
+                cnic
+            };
+    
+            // Find the document by ID and update it with the provided updates
+            const updatedStatus = await memberModel.findByIdAndUpdate(id, updates, { new: true });
+    
+            if (!updatedStatus) {
+                // If the document was not found, return an error
+                return res.status(404).json({ msg: 'Member not found' });
+            }
+    
+            res.status(200).json({
+                data: updatedStatus,
+                msg: "Plot Status updated Successfully"
             });
         } catch (error) {
             return next(error);
         }
-
-        res.status(200).json({ data: updatedData, msg: "Member Information updated successfully" })
     }
 }
 
