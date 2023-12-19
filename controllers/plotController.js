@@ -1,7 +1,35 @@
 const Joi = require('joi');
 const PlotsModel = require('../models/plots')
 
+const nodemailer = require('nodemailer');
 
+// Create a transporter using your SMTP server configuration
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465, // or 587 for TLS
+    secure: true, // true for SSL, false for TLS
+    auth: {
+        user: 'pgechs.com.pk@gmail.com',
+        pass: 'owyf vzwy gsog wnpt',
+    },
+});
+
+// Define a function to send an email
+async function sendEmail(recipientEmail, subject, message) {
+    try {
+        // Send mail with defined transport object
+        const info = await transporter.sendMail({
+            from: 'pgechs.com.pk@gmail.com',
+            to: recipientEmail,
+            subject: subject,
+            text: message,
+        });
+
+        console.log('Email sent: %s', info.messageId);
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+}
 
 const plotController = {
     async add(req, res, next) {
@@ -15,12 +43,13 @@ const plotController = {
             location: Joi.string().required(),
             street: Joi.string().required(),
             block: Joi.string().required(),
+            email: Joi.string().required(),
         });
         const { error } = plotToRegister.validate(req.body);
         if (error) {
             return next(error);
         }
-        const { plotID, plotType, dimensions, sqFeet, location, street, block } = req.body;
+        const { plotID, plotType, dimensions, sqFeet, location, street, block, email } = req.body;
         const { id } = req.params;
         let plot;
         try {
@@ -51,6 +80,7 @@ const plotController = {
         } catch (error) {
             return next(error);
         }
+        sendEmail(email, 'Plot Saved successfully', `Your plot information has been saved successfully. You can see by using membership number and password. \nRegards\nPGECHS`);
         res.status(200).json({
             data: plot,
             msg: "PLOTS ASSIGNED TO MEMBER"
@@ -101,12 +131,16 @@ const plotController = {
     async delete(req, res, next) {
         const { id } = req.params;
         let status;
+        const {
+            email,
+        } = req.body;
         try {
             status = await PlotsModel.findById(id)
         } catch (error) {
             return next(error);
         }
         status.deleteOne();
+        sendEmail(email, 'Plot Deleted successfully', `Your plot information has been deleted successfully. You can see by using membership number and password. \nRegards\nPGECHS`);
         res.status(200).json({ msg: "plot deleted successfully", data: status });
     },
     async update(req, res, next) {
@@ -118,7 +152,8 @@ const plotController = {
             sqFeet,
             location,
             street,
-            block
+            block,
+            email
         } = req.body;
     
         try {
@@ -140,7 +175,7 @@ const plotController = {
                 // If the document was not found, return an error
                 return res.status(404).json({ msg: 'Plot not found' });
             }
-    
+            sendEmail(email, 'Plot Information Updated Successfully', `Your plot information has been updated successfully. You can see by using membership number and password. \nRegards\nPGECHS`);
             res.status(200).json({
                 data: updatedStatus,
                 msg: "Plot Status updated Successfully"

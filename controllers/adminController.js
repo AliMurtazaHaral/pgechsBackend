@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const userMember = require('../models/memberRegister')
 const Role = require('../models/role');
 const PermissionMod = require('../models/permissions');
 const Joi = require('joi');
@@ -7,13 +8,34 @@ const RefreshToken = require('../models/token');
 const JWTService = require('../services/JWTservice');
 const memberRegMod = require('../models/memberRegister');
 const role = require('../models/role');
+const nodemailer = require('nodemailer');
+// Create a transporter using your SMTP server configuration
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465, // or 587 for TLS
+    secure: true, // true for SSL, false for TLS
+    auth: {
+        user: 'pgechs.com.pk@gmail.com',
+        pass: 'owyf vzwy gsog wnpt',
+    },
+});
 
+// Define a function to send an email
+async function sendEmail(recipientEmail, subject, message) {
+    try {
+        // Send mail with defined transport object
+        const info = await transporter.sendMail({
+            from: 'pgechs.com.pk@gmail.com',
+            to: recipientEmail,
+            subject: subject,
+            text: message,
+        });
 
-
-
-  
-
-
+        console.log('Email sent: %s', info.messageId);
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+}
 const adminController = {
     async login(req, res, next) {
         const userSchema = Joi.object({
@@ -33,6 +55,7 @@ const adminController = {
                     status: 409,
                     message: "Invalid Username"
                 }
+                
                 return res.status(error.status).json({ msg: error.message });
             }
             const match = await bycrypt.compare(password, user.password);
@@ -85,8 +108,89 @@ const adminController = {
 
     },
 
+    async memberLogin(req, res, next) {
+        const userSchema = Joi.object({
+            MemberId: Joi.string().min(3).max(15).required(),
+            password: Joi.string().min(3).max(15).required("Password must be atleast 8 character")
+        });
+        const { error } = userSchema.validate(req.body);
+        if (error) {
+            return next(error);
+        }
+        const { MemberId, password } = req.body;
+        let user;
+        try {
+            user = await userMember.findOne({ MemberId: MemberId });
+            if (!user) {
+                const error = {
+                    status: 409,
+                    message: "Invalid Member ID"
+                }
+                return res.status(error.status).json({ msg: error.message });
+            }
+            const match = await bycrypt.compare(password, user.password);
+            if (!match) {
+                const error = {
+                    status: 409,
+                    message: "Invalid Password"
+                }
+                return res.status(error.status).json({ msg: error.message });
+            }
 
+        } catch (error) {
+            return next(error);
+        }
+        const accessToken = JWTService.SignAccessToken({ _id: user._id }, '30m');
+        const refreshToken = JWTService.SignRefreshToken({ _id: user._id }, '30m')
 
+        //store token in DB
+        try {
+            RefreshToken.updateOne({
+                _id: user._id
+            },
+                { token: refreshToken },
+                { upsert: true }
+            );
+        }
+        catch (error) {
+            return next(error);
+        }
+
+        res.cookie('accessToken', accessToken, {
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true
+        });
+
+        let role;
+        try {
+            role = await Role.findById(user.role).populate({
+                path: "role"
+            })
+        } catch (error) {
+            return next(error);
+        }
+        res.status(200).json({ Data: user, token:accessToken ,msg: `Logged in as ${role.role}`, auth: true });
+
+    },
+    async delete(req, res, next) {
+        const {id} = req.params;
+        const {
+            email,
+        } = req.body;
+        let status;
+        try {
+            status = await userMember.findByIdAndDelete(id)
+        } catch (error) {
+            return next(error);
+        }
+        sendEmail(email, 'Member Account Deletion', `Your account has been deleted. Thanks for using our services wish you good luck in the future. \nRegards\nPGECHS`);
+        res.status(200).json({msg:"Member deleted successfully", data:status });
+    },
     async passwordReset(req, res, next) {
         const userReq = Joi.object({
             oldPassword: Joi.string().required(),

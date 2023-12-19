@@ -9,6 +9,7 @@ const notificationController = require('../controllers/notification');
 
 //Admin Routes*******************************************************************done
 route.post('/admin', adminController.login);
+route.post('/memberLogin', adminController.memberLogin);
 route.put('/admin/passwordReset/:id', adminController.passwordReset);
 route.post('/admin/permissions', adminController.permissions);
 route.post('/admin/role', adminController.role);
@@ -16,6 +17,7 @@ route.get('/admin/getAllUsers', adminController.getAllUsers);
 route.get('/admin/role/getAllRoles', adminController.getAllRoles);
 route.post('/admin/Register', adminController.Register);
 route.post('/admin/logout', adminController.logout);
+route.delete('/admin/memberDelete/:id', adminController.delete);
 
 //Get all  registered members by admin
 route.get('/admin/getAllRegisterdMembers', adminController.getAllRegisterdMembers);
@@ -68,6 +70,7 @@ route.get('/members/getbyid/:id', memberController.getById);
 
 //Edit member by id
 route.put('/members/update/:id', memberController.update);
+route.put('/members/transfer/:id', memberController.updateTransfer);
 
 //Delete member by id
 route.delete('/members/delete/:id', memberController.delete);

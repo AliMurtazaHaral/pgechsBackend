@@ -8,7 +8,7 @@ const RefreshToken = require('../models/token');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 
-
+const userMail = "";
 
 
 // Create a transporter using your SMTP server configuration
@@ -83,6 +83,7 @@ const memberController = {
                 MemberId: memberId
             });
             user = await userToRegister.save();
+            userMail = email
             sendEmail(email, 'Member Registration In PGECHS', `Your registration was successful. Here is your login information: Email: ${email} and Password: ${password}`);
             //token Generation
             accessToken = JWTService.SignAccessToken({ _id: user._id }, '30m');
@@ -123,6 +124,7 @@ const memberController = {
             address: Joi.string().required(),
             phoneNumber: Joi.string().required(),
             cnic: Joi.string().required(),
+            email: Joi.string().required()
         });
 
         const { error } = memberSchema.validate(req.body);
@@ -132,7 +134,7 @@ const memberController = {
         }
 
         const uploadedFiles = req.files;
-        const { name, address, phoneNumber, cnic } = req.body;
+        const { name, address, phoneNumber, cnic,email } = req.body;
         const { id } = req.params;
 
         try {
@@ -180,6 +182,7 @@ const memberController = {
                 { $set: { ApplicationStatus: true } },
                 { new: true }
             );
+            
         } catch (error) {
             return next(error);
         }
@@ -194,7 +197,7 @@ const memberController = {
             transferImage: member.transferImage,
             mergedPDF: member.mergedPDF,
         };
-
+        sendEmail(email, 'Congragulations, your profile has been completed.', `You can see your profile by login using given credentials.`);
         // Send the API response with file URLs
         res.status(200).json({
             data: member,
@@ -349,6 +352,9 @@ const memberController = {
         const { id } = req.params;
         let userReg;
         let userR;
+        const {
+            email,
+        } = req.body;
         try {
             const findUser = await memberModel.findById(id);
 
@@ -359,8 +365,6 @@ const memberController = {
                 }
                 return next(error);
             }
-
-
             const getMember = await memberReg.findOne(findUser.member_id);
             userReg = await memberReg.updateOne({ _id: getMember },
                 { $set: { ApplicationStatus: false } },
@@ -392,16 +396,41 @@ const memberController = {
                 }
             });
         }
-
+        sendEmail(email, 'Member Profile Deletion', `Your profile has been deleted. We will let you know when we complete it again. \nRegards\nPGECHS`);
         res.status(200).json({
             msg: "Member Data Deleted Successfully",
             data: userReg
         });
     },
-
-
-
-
+    async updateTransfer(req, res, next) {
+        const { id } = req.params;
+        const {
+            email,
+        } = req.body;
+        try {
+            // Create an object with the fields you want to update
+            const updates = {
+                email
+            };
+    
+            // Find the document by ID and update it with the provided updates
+            const updatedStatus = await memberReg.findByIdAndUpdate(id, updates, { new: true });
+    
+            if (!updatedStatus) {
+                // If the document was not found, return an error
+                return res.status(404).json({ msg: 'Member not found' });
+            }
+            sendEmail(email, 'Member Info Transfers', `Your email has been changed you can login using your membership number and password. Thanks, \nRegards\nPGECHS`);
+            
+            res.status(200).json({
+                data: updatedStatus,
+                msg: "Email Transfer successfully"
+            });
+            
+        } catch (error) {
+            return next(error);
+        }
+    },
 
     async update(req, res, next) {
         const { id } = req.params;
@@ -409,7 +438,8 @@ const memberController = {
             name,
             address,
             phoneNumber,
-            cnic
+            cnic,
+            email
         } = req.body;
     
         try {
@@ -428,7 +458,7 @@ const memberController = {
                 // If the document was not found, return an error
                 return res.status(404).json({ msg: 'Member not found' });
             }
-    
+            sendEmail(email, 'Congragulations, your profile has been updated.', `You can see your updated details from profile dashboard by login using given credentials.`);
             res.status(200).json({
                 data: updatedStatus,
                 msg: "Plot Status updated Successfully"
