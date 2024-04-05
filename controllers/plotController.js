@@ -107,7 +107,23 @@ const plotController = {
         }
         res.status(200).json({ data: plots, msg: "All plots of member fetched successfully" });
     },
+    async all1(req, res, next) {
+        const { id } = req.params;
+        let plots;
+        try {
+            plots = await PlotsModel.find({}).populate({
+                path: "MemberID",
+                populate: {
+                    path: "member_id"
+                }
+            });
 
+            console.log("Plots: " + plots)
+        } catch (error) {
+            return next(error);
+        }
+        res.status(200).json({ data: plots, msg: "All plots of member fetched successfully" });
+    },
 
     
     async getById(req, res, next) {
