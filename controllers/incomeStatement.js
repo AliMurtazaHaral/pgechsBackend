@@ -12,6 +12,8 @@ const expenditureController = {
             pFee: Joi.number().required(),
             masjidFund: Joi.number().required(),
             ADC: Joi.number().required(),
+            extraADC: Joi.number().required(),
+            electricityCharges: Joi.number().required(),
             suiGasCharges: Joi.number().required(),
             bankProfit: Joi.number().required(),
             cornerFee: Joi.number().required(),
@@ -20,7 +22,8 @@ const expenditureController = {
         if (error) {
             return next(error);
         }
-        const { date, electionFee, misIncome, msFee, shareMoney, transferFee, pFee, masjidFund, ADC, suiGasCharges, bankProfit, cornerFee} = req.body;
+        const { date, electionFee, misIncome, msFee, shareMoney, transferFee, pFee, masjidFund, ADC, extraADC,
+            electricityCharges, suiGasCharges, bankProfit, cornerFee} = req.body;
         const { id } = req.params;
         let plot;
         try {
@@ -34,6 +37,8 @@ const expenditureController = {
                 pFee: pFee,
                 masjidFund: masjidFund,
                 ADC: ADC,
+                extraADC: extraADC,
+                electricityCharges: electricityCharges,
                 suiGasCharges: suiGasCharges,
                 bankProfit: bankProfit,
                 cornerFee: cornerFee,
@@ -70,7 +75,8 @@ const expenditureController = {
     },
     async update(req, res, next) {
         const { id } = req.params;
-        const { date, electionFee, misIncome, msFee, shareMoney, transferFee, pFee, masjidFund, ADC, suiGasCharges, bankProfit, cornerFee} = req.body;
+        const { date, electionFee, misIncome, msFee,extraADC,
+            electricityCharges, shareMoney, transferFee, pFee, masjidFund, ADC, suiGasCharges, bankProfit, cornerFee} = req.body;
         try {
             // Create an object with the fields you want to update
             const updates = {
@@ -83,6 +89,8 @@ const expenditureController = {
                 pFee,
                 masjidFund,
                 ADC,
+                extraADC,
+                electricityCharges,
                 suiGasCharges,
                 bankProfit,
                 cornerFee

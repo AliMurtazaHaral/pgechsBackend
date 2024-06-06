@@ -40,6 +40,14 @@ const incomeStatement = new Schema({
         type:Number,
         require:true
     },
+    extraADC:{
+        type:Number,
+        require:true
+    },
+    electricityCharges:{
+        type:Number,
+        require:true
+    },
     suiGasCharges:{
         type:Number,
         require:true
